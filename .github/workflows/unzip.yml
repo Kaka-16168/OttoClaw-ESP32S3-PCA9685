@@ -1,0 +1,30 @@
+name: Auto Unzip
+on:
+  workflow_dispatch:
+
+jobs:
+  unzip:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Unzip file and push
+        run: |
+          unzip xiaozhi-esp32-main.zip
+          rm xiaozhi-esp32-main.zip
+          
+          # 防止压缩包里有一层套娃文件夹
+          if [ -d "xiaozhi-esp32-main" ]; then
+            mv xiaozhi-esp32-main/* .
+            mv xiaozhi-esp32-main/.* . 2>/dev/null || true
+            rmdir xiaozhi-esp32-main
+          fi
+          
+          git config --global user.name 'GitHub Action'
+          git config --global user.email 'action@github.com'
+          git add -A
+          git commit -m "Auto unzip source code"
+          git push
